@@ -7,19 +7,33 @@ function generateMatrix() {
   const rows = parseInt(document.getElementById('rows').value, 10);
   const cols = parseInt(document.getElementById('columns').value, 10);
 
+  // Convert input values to an array of numbers
   const numbers = numbersInput.split(',').map(Number);
 
-  let matrix = Array(rows)
-    .fill(null)
-    .map(() => Array(cols).fill(0));
-  let flatList = [];
+  // Calculate the total number of cells in the matrix
+  const totalCells = rows * cols;
 
-  // Generate initial random list
-  while (flatList.reduce((acc, val) => acc + val, 0) < targetSum) {
+  // Generate an array with enough values to fill the matrix
+  let flatList = [];
+  let currentSum = 0;
+
+  // Fill the list to reach or exceed the targetSum
+  while (currentSum < targetSum) {
     flatList = flatList.concat(numbers);
+    currentSum = flatList.reduce((acc, val) => acc + val, 0);
   }
 
-  flatList = flatList.slice(0, rows * cols); // Ensure correct number of elements
+  // Trim the flatList to match the targetSum exactly
+  while (currentSum > targetSum) {
+    flatList.pop();
+    currentSum = flatList.reduce((acc, val) => acc + val, 0);
+  }
+
+  // Ensure we have enough values to fill the matrix
+  if (flatList.length < totalCells) {
+    const remainingCells = totalCells - flatList.length;
+    flatList = flatList.concat(Array(remainingCells).fill(0)); // Fill remaining cells with 0
+  }
 
   // Shuffle the flatList array
   for (let i = flatList.length - 1; i > 0; i--) {
@@ -27,13 +41,13 @@ function generateMatrix() {
     [flatList[i], flatList[j]] = [flatList[j], flatList[i]];
   }
 
-  // Fill matrix with values from shuffled list
+  // Create the matrix with the specified number of rows and columns
+  let matrix = [];
   for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      matrix[i][j] = flatList[i * cols + j];
-    }
+    matrix.push(flatList.slice(i * cols, (i + 1) * cols));
   }
 
+  // Display the matrix
   const matrixContainer = document.getElementById('matrixContainer');
   matrixContainer.innerHTML = '';
   const table = document.createElement('table');
