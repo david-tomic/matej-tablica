@@ -5,46 +5,53 @@ function generateMatrix() {
   const numbersInput = document.getElementById('numbers').value;
   const targetSum = parseInt(document.getElementById('targetSum').value, 10);
   const rows = parseInt(document.getElementById('rows').value, 10);
-  const cols = parseInt(document.getElementById('columns').value, 10);
 
   // Convert input values to an array of numbers
   const numbers = numbersInput.split(',').map(Number);
 
-  // Calculate the total number of cells in the matrix
-  const totalCells = rows * cols;
+  // Function to get a random combination of numbers to reach the target sum
+  function getRandomCombination(target, nums) {
+    let combination = [];
+    let sum = 0;
 
-  // Generate an array with enough values to fill the matrix
-  let flatList = [];
-  let currentSum = 0;
+    // Continue adding random numbers until we reach or exceed the target sum
+    while (sum < target) {
+      const num = nums[Math.floor(Math.random() * nums.length)];
+      if (sum + num <= target) {
+        combination.push(num);
+        sum += num;
+      }
+    }
 
-  // Fill the list to reach or exceed the targetSum
-  while (currentSum < targetSum) {
-    flatList = flatList.concat(numbers);
-    currentSum = flatList.reduce((acc, val) => acc + val, 0);
+    return combination;
   }
 
-  // Trim the flatList to match the targetSum exactly
-  while (currentSum > targetSum) {
-    flatList.pop();
-    currentSum = flatList.reduce((acc, val) => acc + val, 0);
+  // Get a random combination that sums up to the targetSum
+  let combination = getRandomCombination(targetSum, numbers);
+
+  // Calculate the number of columns based on the number of rows and total items needed
+  const totalCells = rows * Math.ceil(combination.length / rows);
+  const cols = Math.ceil(combination.length / rows);
+
+  // Ensure the matrix has enough cells
+  if (combination.length < totalCells) {
+    combination = combination.concat(
+      Array(totalCells - combination.length).fill(0)
+    ); // Fill remaining cells with 0
+  } else {
+    combination = combination.slice(0, totalCells); // Trim if necessary
   }
 
-  // Ensure we have enough values to fill the matrix
-  if (flatList.length < totalCells) {
-    const remainingCells = totalCells - flatList.length;
-    flatList = flatList.concat(Array(remainingCells).fill(0)); // Fill remaining cells with 0
-  }
-
-  // Shuffle the flatList array
-  for (let i = flatList.length - 1; i > 0; i--) {
+  // Shuffle the combination array
+  for (let i = combination.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [flatList[i], flatList[j]] = [flatList[j], flatList[i]];
+    [combination[i], combination[j]] = [combination[j], combination[i]];
   }
 
-  // Create the matrix with the specified number of rows and columns
+  // Create the matrix with the determined number of rows and columns
   let matrix = [];
   for (let i = 0; i < rows; i++) {
-    matrix.push(flatList.slice(i * cols, (i + 1) * cols));
+    matrix.push(combination.slice(i * cols, (i + 1) * cols));
   }
 
   // Display the matrix
